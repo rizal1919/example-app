@@ -12,9 +12,13 @@ class EmployeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        $employes = Employe::all();
+    public function index(Request $request)
+    {   
+
+        $search = $request->search;
+        $employes = Employe::when($search, function($query, $search){
+            return $query->where('phone_number','like',"%$search%");
+        })->paginate(10);
 
         return view('employe.index', [
             'title' => 'DASHBOARD',
@@ -45,7 +49,7 @@ class EmployeController extends Controller
         $request->validate([
             'fullname'=>'required|between:3,100',
             'phone_number'=>'nullable|between:10,20',
-            'jobtitle'=> 'nullable|between:3,10'
+            'jobtitle'=> 'nullable|between:3,30'
         ],[],[
             'fullname'=>'full name',
             'jobtitle'=>'job title'
@@ -66,9 +70,12 @@ class EmployeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Employe $employe)
     {
-        //
+        return view('employe.show', [
+            'employe'=>$employe,
+            'title'=>$employe->fullname,
+        ]);
     }
 
     /**
@@ -77,9 +84,12 @@ class EmployeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Employe $employe)
     {
-        //
+        return view('employe.update', [
+            'employe'=>$employe,
+            'title'=>$employe->fullname,
+        ]);
     }
 
     /**
@@ -89,9 +99,24 @@ class EmployeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Employe $employe)
     {
-        //
+        $request->validate([
+            'fullname'=>'required|between:3,100',
+            'phone_number'=>'nullable|between:10,20',
+            'jobtitle'=> 'nullable|between:3,30'
+        ],[],[
+            'fullname'=>'full name',
+            'jobtitle'=>'job title'
+        ]);
+
+        $employe->update([
+            'fullname'=> ucwords( $request->fullname ),
+            'phone_number'=> $request->phone_number,
+            'jobtitle'=> ucwords( $request->jobtitle )
+        ]);
+
+        return to_route('employes.index')->with('update','success');
     }
 
     /**
@@ -100,8 +125,9 @@ class EmployeController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Employe $employe)
     {
-        //
+        $employe->delete();
+        return back()->with('destroy','success');
     }
 }
