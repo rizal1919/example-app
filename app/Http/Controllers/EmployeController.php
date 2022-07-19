@@ -17,6 +17,7 @@ class EmployeController extends Controller
         $employes = Employe::all();
 
         return view('employe.index', [
+            'title' => 'DASHBOARD',
             'employes'=>$employes,
         ]);
     }
@@ -28,7 +29,9 @@ class EmployeController extends Controller
      */
     public function create()
     {
-        return view('employe.create');
+        return view('employe.create',[
+            'title' => 'ADD-PAGE'
+        ]);
     }
 
     /**
@@ -39,7 +42,22 @@ class EmployeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'fullname'=>'required|between:3,100',
+            'phone_number'=>'nullable|between:10,20',
+            'jobtitle'=> 'nullable|between:3,10'
+        ],[],[
+            'fullname'=>'full name',
+            'jobtitle'=>'job title'
+        ]);
+
+        Employe::create([
+            'fullname'=> ucwords( $request->fullname ),
+            'phone_number'=> $request->phone_number,
+            'jobtitle'=> ucwords( $request->jobtitle )
+        ]);
+
+        return to_route('employes.index')->with('store','success');
     }
 
     /**
