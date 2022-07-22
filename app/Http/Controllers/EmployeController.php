@@ -14,10 +14,10 @@ class EmployeController extends Controller
      */
     public function index(Request $request)
     {   
-
+        
         $search = $request->search;
         $employes = Employe::when($search, function($query, $search){
-            return $query->where('phone_number','like',"%$search%");
+            return $query->where('fullname','like',"%$search%");
         })->paginate(10);
 
         return view('employe.index', [
@@ -55,13 +55,23 @@ class EmployeController extends Controller
             'jobtitle'=>'job title'
         ]);
 
+        // $validatedData = $request->validate([
+        //     'fullname'=>'required|between:3,100',
+        //     'phone_number'=>'nullable|between:10,20',
+        //     'jobtitle'=> 'nullable|between:3,30'
+        // ]);
+
+
+
         Employe::create([
             'fullname'=> ucwords( $request->fullname ),
             'phone_number'=> $request->phone_number,
             'jobtitle'=> ucwords( $request->jobtitle )
         ]);
 
-        return to_route('employes.index')->with('store','success');
+        // return to_route('employes.index')->with('store','success');
+        return redirect('/employes')->with('store','success');
+
     }
 
     /**
